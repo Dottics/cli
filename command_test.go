@@ -105,6 +105,53 @@ func TestCommand_Add(t *testing.T) {
 	}
 }
 
+func TestCommand_Add_level_cascade(t *testing.T) {
+	c1 := NewCommand("add", flag.ExitOnError)
+	c2 := NewCommand("user", flag.ExitOnError)
+	c3 := NewCommand("location", flag.ExitOnError)
+	c4 := NewCommand("address", flag.ExitOnError)
+
+	if c1.level != 0 {
+		t.Errorf("expected c1 to have level %d got %d", 0, c1.level)
+	}
+	if c2.level != 0 {
+		t.Errorf("expected c1 to have level %d got %d", 0, c2.level)
+	}
+	if c3.level != 0 {
+		t.Errorf("expected c1 to have level %d got %d", 0, c3.level)
+	}
+	if c4.level != 0 {
+		t.Errorf("expected c1 to have level %d got %d", 0, c4.level)
+	}
+
+	err := c1.Add(c2)
+	if err != nil {
+		t.Errorf("expected error on first add %v got %v", nil, err)
+	}
+	err = c1.Add(c3)
+	if err != nil {
+		t.Errorf("expected error on first add %v got %v", nil, err)
+	}
+
+	if c1.level != 0 {
+		t.Errorf("expected c1 to have level %d got %d", 0, c1.level)
+	}
+	if c2.level != 1 {
+		t.Errorf("expected c1 to have level %d got %d", 1, c2.level)
+	}
+	if c3.level != 1 {
+		t.Errorf("expected c1 to have level %d got %d", 1, c3.level)
+	}
+
+	err = c3.Add(c4)
+	if err != nil {
+		t.Errorf("expected error on first add %v got %v", nil, err)
+	}
+	if c4.level != 2 {
+		t.Errorf("expected c1 to have level %d got %d", 2, c4.level)
+	}
+}
+
 func TestCommand_AddCommands(t *testing.T) {
 	tt := []struct {
 		name string
