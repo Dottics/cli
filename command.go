@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+// ErrorNotEqual is a function used for testing to test whether two errors
+// are not equal and returns false if the errors are the same else true if
+// the error are not equal.
 func ErrorNotEqual(err1, err2 error) bool {
 	if err1 == err2 {
 		return false
@@ -19,10 +22,11 @@ func ErrorNotEqual(err1, err2 error) bool {
 
 // WIP is a placeholder function used when create a new command.
 func WIP(cmd *Command) {
-	fmt.Printf("WIP\n\n")
+	fmt.Printf("\n\n** WIP **\n\n")
+	cmd.PrintHelp()
 }
 
-// Command is a struct
+// Command is a struct.
 type Command struct {
 	level       int // the level at which to start args parsing
 	Name        string
