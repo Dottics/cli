@@ -63,15 +63,6 @@ func (c Command) PrintHelp() {
 	c.FlagSet.PrintDefaults()
 }
 
-//// NewCommandSet creates a new CommandSet.
-//func NewCommandSet(level int) *CommandSet {
-//	cs := &CommandSet{
-//		level: level,
-//	}
-//	cs.Commands = make(map[string]*Command)
-//	return cs
-//}
-
 // Add appends a command to the command set.
 func (c *Command) Add(cmd *Command) error {
 	// Fatal if the command already exists
