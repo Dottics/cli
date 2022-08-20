@@ -190,3 +190,69 @@ func TestCommand_AddCommands(t *testing.T) {
 		})
 	}
 }
+
+func TestIsCommand(t *testing.T) {
+	tt := []struct {
+		name   string
+		args   []string
+		output string
+	}{
+		{
+			name:   "no args",
+			args:   []string{},
+			output: "",
+		},
+		{
+			name:   "command",
+			args:   []string{"get", "-help"},
+			output: "get",
+		},
+		{
+			name:   "command",
+			args:   []string{"get", "--help"},
+			output: "get",
+		},
+		{
+			name:   "command",
+			args:   []string{"get", "--help", "subcommand"},
+			output: "get",
+		},
+		{
+			name:   "flags",
+			args:   []string{"-help"},
+			output: "",
+		},
+		{
+			name:   "flags",
+			args:   []string{"-help", "subcommand"},
+			output: "",
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			o := isCommand(tc.args)
+			if o != tc.output {
+				t.Errorf("expected command '%s' got '%s'", tc.output, o)
+			}
+		})
+	}
+}
+
+func TestCommand_Run(t *testing.T) {
+	tt := []struct {
+		name string
+	}{
+		{
+			name: "level 0 no args",
+		},
+		{
+			name: "sub level no args",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+		})
+	}
+}
