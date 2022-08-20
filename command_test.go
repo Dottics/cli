@@ -17,6 +17,12 @@ func TestNewCommand(t *testing.T) {
 	if cmd.FlagSet == nil {
 		t.Errorf("expected new command to have FlagSet got %v", nil)
 	}
+	if cmd.CommandSet == nil {
+		t.Errorf("expected command set %v got %v", nil, cmd.CommandSet)
+	}
+	if len(cmd.CommandSet) != 0 {
+		t.Errorf("expected command set to have length %d got %d", 0, len(cmd.CommandSet))
+	}
 }
 
 func TestCommand_Help(t *testing.T) {
@@ -74,6 +80,65 @@ func TestCommand_Init(t *testing.T) {
 			}
 			if username != tc.username {
 				t.Errorf("expected flag username '%s' got '%s'", tc.username, username)
+			}
+		})
+	}
+}
+
+func TestCommand_Add(t *testing.T) {
+	c1 := NewCommand("add", flag.ExitOnError)
+	c2 := NewCommand("user", flag.ExitOnError)
+	c3 := NewCommand("location", flag.ExitOnError)
+	c4 := NewCommand("user", flag.ExitOnError)
+
+	err := c1.Add(c2)
+	if err != nil {
+		t.Errorf("expected error on first add %v got %v", nil, err)
+	}
+	err = c1.Add(c3)
+	if err != nil {
+		t.Errorf("expected error on first add %v got %v", nil, err)
+	}
+	err = c1.Add(c4)
+	if err == nil {
+		t.Errorf("expected error on second add to not be nil")
+	}
+}
+
+func TestCommand_AddCommands(t *testing.T) {
+	tt := []struct {
+		name string
+		cmd  *Command
+		cmds []*Command
+		err  error
+	}{
+		{
+			name: "no duplicates commands",
+			cmd:  NewCommand("get", flag.ExitOnError),
+			cmds: []*Command{
+				NewCommand("user", flag.ExitOnError),
+				NewCommand("task", flag.ExitOnError),
+				NewCommand("contact", flag.ExitOnError),
+			},
+			err: nil,
+		},
+		{
+			name: "duplicate commands",
+			cmd:  NewCommand("get", flag.ExitOnError),
+			cmds: []*Command{
+				NewCommand("user", flag.ExitOnError),
+				NewCommand("task", flag.ExitOnError),
+				NewCommand("user", flag.ExitOnError),
+			},
+			err: fmt.Errorf("cannot add command user already exists"),
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.cmd.AddCommands(tc.cmds)
+			if ErrorNotEqual(err, tc.err) {
+				t.Errorf("expected error %v got %v", tc.err, err)
 			}
 		})
 	}

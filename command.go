@@ -29,8 +29,8 @@ type Command struct {
 	Usage       string // the usage string
 	Description string
 	FlagSet     *flag.FlagSet
-	//CommandSet  *CommandSet
-	Execute func(command *Command)
+	CommandSet  map[string]*Command
+	Execute     func(command *Command)
 }
 
 // NewCommand creates a basic new command.
@@ -40,6 +40,7 @@ func NewCommand(name string, handling flag.ErrorHandling) *Command {
 		Name:        name,
 		Description: "",
 		FlagSet:     flag.NewFlagSet(name, handling),
+		CommandSet:  make(map[string]*Command),
 		Execute:     WIP,
 	}
 	return cmd
@@ -60,4 +61,35 @@ func (c *Command) Init(args []string) error {
 func (c Command) PrintHelp() {
 	fmt.Printf("%s", c.Help())
 	c.FlagSet.PrintDefaults()
+}
+
+//// NewCommandSet creates a new CommandSet.
+//func NewCommandSet(level int) *CommandSet {
+//	cs := &CommandSet{
+//		level: level,
+//	}
+//	cs.Commands = make(map[string]*Command)
+//	return cs
+//}
+
+// Add appends a command to the command set.
+func (c *Command) Add(cmd *Command) error {
+	// Fatal if the command already exists
+	if _, ok := c.CommandSet[cmd.Name]; ok {
+		return fmt.Errorf("cannot add command %s already exists", cmd.Name)
+	}
+	cmd.level = c.level + 1
+	c.CommandSet[cmd.Name] = cmd
+	return nil
+}
+
+// AddCommands appends multiple commands to the command set.
+func (c *Command) AddCommands(cmds []*Command) error {
+	for _, cmd := range cmds {
+		err := c.Add(cmd)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
