@@ -24,8 +24,9 @@ func WIP(cmd *Command) {
 
 // Command is a struct
 type Command struct {
+	level       int // the level at which to start args parsing
 	Name        string
-	Usage       string
+	Usage       string // the usage string
 	Description string
 	FlagSet     *flag.FlagSet
 	//CommandSet  *CommandSet
@@ -35,6 +36,7 @@ type Command struct {
 // NewCommand creates a basic new command.
 func NewCommand(name string, handling flag.ErrorHandling) *Command {
 	cmd := &Command{
+		level:       0,
 		Name:        name,
 		Description: "",
 		FlagSet:     flag.NewFlagSet(name, handling),
@@ -52,4 +54,10 @@ func (c *Command) Help() string {
 // Init parses the command line args to the command's flags.
 func (c *Command) Init(args []string) error {
 	return c.FlagSet.Parse(args)
+}
+
+// PrintHelp prints the command help to the console.
+func (c Command) PrintHelp() {
+	fmt.Printf("%s", c.Help())
+	c.FlagSet.PrintDefaults()
 }
