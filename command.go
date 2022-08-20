@@ -1,9 +1,12 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 )
+
+var help bool
 
 // ErrorNotEqual is a function used for testing to test whether two errors
 // are not equal and returns false if the errors are the same else true if
@@ -15,15 +18,38 @@ func ErrorNotEqual(err1, err2 error) bool {
 	if err1 != nil && err2 != nil {
 		if err1.Error() != err2.Error() {
 			return true
+		} else {
+			return false
 		}
 	}
-	return false
+	// this means one is nil and the other not
+	return true
 }
 
 // WIP is a placeholder function used when create a new command.
 func WIP(cmd *Command) error {
 	fmt.Printf("\n\n** WIP **\n\n")
 	return nil
+}
+
+// isCommand checks if the first element in the slice of strings from os.Args
+// is a command, then returns the command, otherwise if the first element is a
+// flag then it returns a zero string.
+func isCommand(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	v := args[0]
+	if v == "" { // although os.Args will never return a zero string
+		return v
+	}
+	if string(v[0]) == "-" {
+		// if v does start with '-' then it is a flag
+		return ""
+	} else {
+		// if v does not start with '-' then it is a command
+		return v
+	}
 }
 
 // Command is a struct.
@@ -47,6 +73,7 @@ func NewCommand(name string, handling flag.ErrorHandling) *Command {
 		CommandSet:  make(map[string]*Command),
 		Execute:     WIP,
 	}
+	cmd.FlagSet.BoolVar(&help, "help", false, "To get help information for this command.")
 	return cmd
 }
 
@@ -90,31 +117,13 @@ func (c *Command) AddCommands(xc []*Command) error {
 	return nil
 }
 
-// isCommand checks if the first element in the slice of strings from os.Args
-// is a command, then returns the command, otherwise if the first element is a
-// flag then it returns a zero string.
-func isCommand(args []string) string {
-	if len(args) == 0 {
-		return ""
-	}
-	v := args[0]
-	if v == "" { // although os.Args will never return a zero string
-		return v
-	}
-	if string(v[0]) == "-" {
-		// if v does start with '-' then it is a flag
-		return ""
-	} else {
-		// if v does not start with '-' then it is a command
-		return v
-	}
-}
-
+// Run is used to run the command, this could be to call a sub-command or
+// to execute the command pointed to.
 func (c *Command) Run(args []string) error {
 	// if there are no args print help
 	if len(args) == 0 {
 		c.PrintHelp()
-		return fmt.Errorf("invalid operation: required args length > 0: %v", args)
+		return errors.New("invalid operation: required args length > 0")
 	}
 
 	// for this command parse the args

@@ -8,6 +8,55 @@ import (
 	"testing"
 )
 
+func TestErrorNotEqual(t *testing.T) {
+	tt := []struct {
+		name   string
+		err1   error
+		err2   error
+		output bool
+	}{
+		{
+			name:   "nil nil",
+			err1:   nil,
+			err2:   nil,
+			output: false,
+		},
+		{
+			name:   "err nil",
+			err1:   errors.New("error one"),
+			err2:   nil,
+			output: true,
+		},
+		{
+			name:   "nil err",
+			err1:   nil,
+			err2:   errors.New("error two"),
+			output: true,
+		},
+		{
+			name:   "err err",
+			err1:   errors.New("test error"),
+			err2:   errors.New("test error"),
+			output: false,
+		},
+		{
+			name:   "err1 err2",
+			err1:   errors.New("error one"),
+			err2:   errors.New("error two"),
+			output: true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			o := ErrorNotEqual(tc.err1, tc.err2)
+			if o != tc.output {
+				t.Errorf("expected error not equal output %t got %t", tc.output, o)
+			}
+		})
+	}
+}
+
 func TestNewCommand(t *testing.T) {
 	cmd := NewCommand("get", flag.ExitOnError)
 
@@ -42,29 +91,42 @@ func TestCommand_Init(t *testing.T) {
 
 	var username string
 
-	cmd := NewCommand("get", flag.ContinueOnError)
-	cmd.FlagSet.StringVar(&username, "username", "", "username flag.")
+	command := NewCommand("get", flag.ContinueOnError)
+	command.FlagSet.StringVar(&username, "username", "", "username flag.")
+
+	commandNoFlags := NewCommand("get", flag.ContinueOnError)
 
 	tt := []struct {
 		name     string
+		cmd      *Command
 		args     []string
 		err      error
 		username string
 	}{
 		{
+			name:     "command no flags",
+			cmd:      commandNoFlags,
+			args:     []string{"cli", "get", "-username", "james"},
+			err:      errors.New("flag provided but not defined: -username"),
+			username: "",
+		},
+		{
 			name:     "spaced flag: -username james",
+			cmd:      command,
 			args:     []string{"cli", "get", "-username", "james"},
 			err:      nil,
 			username: "james",
 		},
 		{
 			name:     "equal flag: -username=james",
+			cmd:      command,
 			args:     []string{"cli", "get", "-username=james"},
 			err:      nil,
 			username: "james",
 		},
 		{
 			name:     "blank flag: -username",
+			cmd:      command,
 			args:     []string{"cli", "get", "-username"},
 			err:      errors.New("flag needs an argument: -username"),
 			username: "",
@@ -74,7 +136,7 @@ func TestCommand_Init(t *testing.T) {
 	for _, tc := range tt {
 		username = ""
 		t.Run(tc.name, func(t *testing.T) {
-			err := cmd.Init(tc.args[2:])
+			err := tc.cmd.Init(tc.args[2:])
 			if ErrorNotEqual(tc.err, err) {
 				t.Errorf("expected err '%v' got '%v'", tc.err, err)
 			}
@@ -239,20 +301,57 @@ func TestIsCommand(t *testing.T) {
 }
 
 func TestCommand_Run(t *testing.T) {
+	c := NewCommand("root", flag.ContinueOnError)
+	c.Description = "this is the root executable command."
+	c1 := NewCommand("get", flag.ContinueOnError)
+	c1.Description = "get some information."
+	_ = c.Add(c1)
+
 	tt := []struct {
 		name string
+		args []string
+		err  error
 	}{
 		{
 			name: "level 0 no args",
+			args: []string{"cmd"},
+			err:  errors.New("invalid operation: required args length > 0"),
 		},
 		{
 			name: "sub level no args",
+			args: []string{"cmd", "get"},
+			err:  errors.New("invalid operation: required args length > 0"),
+		},
+		{
+			name: "level 0 args parse error",
+			args: []string{"cmd", "-user"},
+			//err:  errors.New("flag: user requested"), // only when no default flags exist
+			err: errors.New("flag provided but not defined: -user"),
+		},
+		{
+			name: "level 1 args parse error",
+			args: []string{"cmd", "get", "-user"},
+			//err:  errors.New("flag: user requested"), // only when no default flags exist
+			err: errors.New("flag provided but not defined: -user"),
+		},
+		{
+			name: "level 0 default help",
+			args: []string{"cmd", "-help"},
+			err:  nil,
+		},
+		{
+			name: "level 1 default help",
+			args: []string{"cmd", "get", "-help"},
+			err:  nil,
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-
+			err := c.Run(tc.args[1:])
+			if ErrorNotEqual(tc.err, err) {
+				t.Errorf("expected error '%v' got '%v'", tc.err, err)
+			}
 		})
 	}
 }

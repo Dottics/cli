@@ -46,15 +46,15 @@ and
 ```bash
 # here the 'get' command does not exist
 go run main.go get
-# Output: 
-```
-and
-```bash
-# here the 'get' command does not exist
-go run main.go -help
 # Output: "
 # 
 # ** WIP **
 # 
 # "
+```
+and
+```bash
+# here the '-help' command does not exist
+go run main.go -help
+# Output: flag provided but not defined: -username
 ```
