@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2022-08-20
+### Added
+- Added full tests to `*Command.Run()` and `*Command.Execute()` can now be
+tested as seen in `command_test.go` specifically the `TestCommand_Run` function
+[see here](./command_test.go).
+- Added a default `-help` flag to all commands created by `NewCommand`.
+
 ## [0.0.0] - 2022-08-20
 ### Added
 - Type `Command` as the command structure.
