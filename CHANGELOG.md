@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-08-22
+### Fixed
+- The `NewCommand` now takes a value pointed to as the help flag.
+- Improved the Options and Commands when printing the command help to the
+console.
+
 ## [0.1.0] - 2022-08-20
 ### Added
 - Added full tests to `*Command.Run()` and `*Command.Execute()` can now be

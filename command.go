@@ -6,8 +6,6 @@ import (
 	"fmt"
 )
 
-var help bool
-
 // ErrorNotEqual is a function used for testing to test whether two errors
 // are not equal and returns false if the errors are the same else true if
 // the error are not equal.
@@ -64,7 +62,7 @@ type Command struct {
 }
 
 // NewCommand creates a basic new command.
-func NewCommand(name string, handling flag.ErrorHandling) *Command {
+func NewCommand(name string, helpFlag *bool, handling flag.ErrorHandling) *Command {
 	cmd := &Command{
 		level:       0,
 		Name:        name,
@@ -73,7 +71,7 @@ func NewCommand(name string, handling flag.ErrorHandling) *Command {
 		CommandSet:  make(map[string]*Command),
 		Execute:     WIP,
 	}
-	cmd.FlagSet.BoolVar(&help, "help", false, "To get help information for this command.")
+	cmd.FlagSet.BoolVar(helpFlag, "help", false, "To get help information for this command.")
 	return cmd
 }
 
@@ -91,8 +89,11 @@ func (c *Command) Init(args []string) error {
 // PrintHelp prints the command help to the console.
 func (c *Command) PrintHelp() {
 	fmt.Printf("%s", c.Help())
+	fmt.Printf("Options:\n")
 	c.FlagSet.PrintDefaults()
+	fmt.Printf("Commands:\n")
 	fmt.Printf("%s", c.CommandSet.Help())
+	fmt.Printf("\n")
 }
 
 // Add appends a command to the command set.

@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+var help bool
+
 func TestErrorNotEqual(t *testing.T) {
 	tt := []struct {
 		name   string
@@ -58,7 +60,7 @@ func TestErrorNotEqual(t *testing.T) {
 }
 
 func TestNewCommand(t *testing.T) {
-	cmd := NewCommand("get", flag.ExitOnError)
+	cmd := NewCommand("get", &help, flag.ExitOnError)
 
 	if cmd.Name != "get" {
 		t.Errorf("expected command name '%s' got '%s'", "get", cmd.Name)
@@ -75,7 +77,7 @@ func TestNewCommand(t *testing.T) {
 }
 
 func TestCommand_Help(t *testing.T) {
-	cmd := NewCommand("get", flag.ExitOnError)
+	cmd := NewCommand("get", &help, flag.ExitOnError)
 	cmd.Usage = "cli"
 	cmd.Description = "get some info."
 	helpString := fmt.Sprintf("Usage: %s %s\n\n%s\n\n", cmd.Usage, cmd.Name, cmd.Description)
@@ -91,10 +93,10 @@ func TestCommand_Init(t *testing.T) {
 
 	var username string
 
-	command := NewCommand("get", flag.ContinueOnError)
+	command := NewCommand("get", &help, flag.ContinueOnError)
 	command.FlagSet.StringVar(&username, "username", "", "username flag.")
 
-	commandNoFlags := NewCommand("get", flag.ContinueOnError)
+	commandNoFlags := NewCommand("get", &help, flag.ContinueOnError)
 
 	tt := []struct {
 		name     string
@@ -148,10 +150,10 @@ func TestCommand_Init(t *testing.T) {
 }
 
 func TestCommand_Add(t *testing.T) {
-	c1 := NewCommand("add", flag.ExitOnError)
-	c2 := NewCommand("user", flag.ExitOnError)
-	c3 := NewCommand("location", flag.ExitOnError)
-	c4 := NewCommand("user", flag.ExitOnError)
+	c1 := NewCommand("add", &help, flag.ExitOnError)
+	c2 := NewCommand("user", &help, flag.ExitOnError)
+	c3 := NewCommand("location", &help, flag.ExitOnError)
+	c4 := NewCommand("user", &help, flag.ExitOnError)
 
 	err := c1.Add(c2)
 	if err != nil {
@@ -168,10 +170,10 @@ func TestCommand_Add(t *testing.T) {
 }
 
 func TestCommand_Add_level_cascade(t *testing.T) {
-	c1 := NewCommand("add", flag.ExitOnError)
-	c2 := NewCommand("user", flag.ExitOnError)
-	c3 := NewCommand("location", flag.ExitOnError)
-	c4 := NewCommand("address", flag.ExitOnError)
+	c1 := NewCommand("add", &help, flag.ExitOnError)
+	c2 := NewCommand("user", &help, flag.ExitOnError)
+	c3 := NewCommand("location", &help, flag.ExitOnError)
+	c4 := NewCommand("address", &help, flag.ExitOnError)
 
 	if c1.level != 0 {
 		t.Errorf("expected c1 to have level %d got %d", 0, c1.level)
@@ -223,21 +225,21 @@ func TestCommand_AddCommands(t *testing.T) {
 	}{
 		{
 			name: "no duplicates commands",
-			cmd:  NewCommand("get", flag.ExitOnError),
+			cmd:  NewCommand("get", &help, flag.ExitOnError),
 			cmds: []*Command{
-				NewCommand("user", flag.ExitOnError),
-				NewCommand("task", flag.ExitOnError),
-				NewCommand("contact", flag.ExitOnError),
+				NewCommand("user", &help, flag.ExitOnError),
+				NewCommand("task", &help, flag.ExitOnError),
+				NewCommand("contact", &help, flag.ExitOnError),
 			},
 			err: nil,
 		},
 		{
 			name: "duplicate commands",
-			cmd:  NewCommand("get", flag.ExitOnError),
+			cmd:  NewCommand("get", &help, flag.ExitOnError),
 			cmds: []*Command{
-				NewCommand("user", flag.ExitOnError),
-				NewCommand("task", flag.ExitOnError),
-				NewCommand("user", flag.ExitOnError),
+				NewCommand("user", &help, flag.ExitOnError),
+				NewCommand("task", &help, flag.ExitOnError),
+				NewCommand("user", &help, flag.ExitOnError),
 			},
 			err: fmt.Errorf("cannot add command user already exists"),
 		},
@@ -301,9 +303,9 @@ func TestIsCommand(t *testing.T) {
 }
 
 func TestCommand_Run(t *testing.T) {
-	c := NewCommand("root", flag.ContinueOnError)
+	c := NewCommand("root", &help, flag.ContinueOnError)
 	c.Description = "this is the root executable command."
-	c1 := NewCommand("get", flag.ContinueOnError)
+	c1 := NewCommand("get", &help, flag.ContinueOnError)
 	c1.Description = "get some information."
 	_ = c.Add(c1)
 
